@@ -25,11 +25,12 @@ const chartCaption = document.getElementById("chart-caption");
 
 const nf = new Intl.NumberFormat("fr-FR");
 
-// Sexe sélectionné : "all" | "F" | "M"
+// État : sexe ("all"|"F"|"M") et périmètre ("metro"|"all")
 let currentSex = "all";
+let currentSource = "metro";
 let lastYear = null;
 
-const sexButtons = document.querySelectorAll(".sex-opt");
+const sexButtons = document.querySelectorAll(".sex-opt[data-sex]");
 sexButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     sexButtons.forEach((b) => {
@@ -37,7 +38,19 @@ sexButtons.forEach((btn) => {
       b.setAttribute("aria-checked", b === btn ? "true" : "false");
     });
     currentSex = btn.dataset.sex;
-    if (lastYear != null) compute(lastYear); // recalcule si un résultat est affiché
+    if (lastYear != null) compute(lastYear);
+  });
+});
+
+const srcButtons = document.querySelectorAll(".sex-opt[data-src]");
+srcButtons.forEach((btn) => {
+  btn.addEventListener("click", () => {
+    srcButtons.forEach((b) => {
+      b.classList.toggle("is-active", b === btn);
+      b.setAttribute("aria-checked", b === btn ? "true" : "false");
+    });
+    currentSource = btn.dataset.src;
+    if (lastYear != null) compute(lastYear);
   });
 });
 
@@ -74,29 +87,23 @@ const WORDS = {
 
 function compute(year) {
   lastYear = year;
-  const sex = currentSex === "all" ? null : currentSex;
+  const sex = currentSex;
+  const source = currentSource;
   const age = CURRENT_YEAR - year;
 
-  const totalBirths = birthsForYear(year);
-  const share = sex === "M" ? BIRTH_SHARE_MALE : sex === "F" ? 1 - BIRTH_SHARE_MALE : 1;
-  const births = Math.round(totalBirths * share);
-
-  const survival = sex
-    ? cohortSurvivalSex(sex, year, CURRENT_YEAR)
-    : cohortSurvival(year, CURRENT_YEAR);
-
-  const alive = Math.round(births * survival);
-  const dead = Math.max(0, births - alive);
-  const pctDead = (dead / births) * 100;
+  const base = Math.round(cohortBase(year, sex));
+  const series = deathSeries(year, sex, source);
+  const dead = Math.round(deathsSoFar(year, sex, source, CURRENT_YEAR));
+  const alive = Math.max(0, base - dead);
+  const pctDead = base > 0 ? (dead / base) * 100 : 0;
 
   const w = WORDS[currentSex];
 
-  // Affichage
   yearOut.textContent = year;
   nounOut.textContent = w.noun;
   bornOut.textContent = w.born;
   birthsLabel.textContent = w.babies;
-  birthsOut.textContent = nf.format(births);
+  birthsOut.textContent = nf.format(base);
   aliveOut.textContent = nf.format(alive);
   pctOut.textContent = pctDead.toFixed(pctDead < 1 ? 1 : 0) + " %";
 
@@ -115,7 +122,7 @@ function compute(year) {
   });
 
   barCaption.textContent = caption(age, pctDead);
-  renderChart(year, sex, age, dead);
+  renderChart(year, sex, source, age, dead, series);
 }
 
 function caption(age, pctDead) {
@@ -128,10 +135,10 @@ function caption(age, pctDead) {
   return "Tu es une légende vivante : presque tous les autres sont partis.";
 }
 
-// Courbe des décès par âge de la génération, avec un repère « tu es ici ».
-function renderChart(year, sex, age, dead) {
-  const deaths = cohortDeathsByAge(year, sex);
-  const N = deaths.length; // 111 (âges 0..110)
+// Courbe des décès par âge : réel (INSEE) à gauche du repère, projection à droite.
+function renderChart(year, sex, source, age, dead, series) {
+  const deaths = series;
+  const N = deaths.length;
   const W = 320, H = 150, padL = 6, padR = 6, padT = 12, padB = 20;
   const base = H - padB;
   const maxD = Math.max.apply(null, deaths) || 1;
@@ -163,7 +170,6 @@ function renderChart(year, sex, age, dead) {
     )
     .join("");
 
-  // étiquette du repère : à droite si on est au début, à gauche si on est tard
   const labelRight = idx / (N - 1) < 0.55;
   const labelX = labelRight ? mx + 5 : mx - 5;
   const anchor = labelRight ? "start" : "end";
@@ -182,10 +188,18 @@ function renderChart(year, sex, age, dead) {
 
   const noun = WORDS[currentSex].noun;
   const peakAge = deaths.indexOf(maxD);
+  const pastLabel = year >= 1970
+    ? `les <b>${nf.format(dead)}</b> ${noun} déjà parti·es (comptage réel INSEE)`
+    : `les <b>${nf.format(dead)}</b> déjà parti·es (réel depuis 1970, estimé avant)`;
+  let extra = "";
+  if (source === "all") {
+    const foreign = Math.round(dead - deathsSoFar(year, sex, "metro", CURRENT_YEAR));
+    if (foreign > 0) extra = ` Dont <b>${nf.format(foreign)}</b> né·es à l'étranger.`;
+  }
   chartCaption.innerHTML =
-    `Chaque point = le nombre de ${noun} de ta génération qui meurent à cet âge. ` +
-    `À gauche du repère, les <b>${nf.format(dead)}</b> déjà parti·es&nbsp;; à droite, ` +
-    `la projection (mortalité figée à aujourd'hui), avec un pic vers <b>${peakAge} ans</b>.`;
+    `Décès par âge de ta génération. À gauche du repère, ${pastLabel}&nbsp;; ` +
+    `à droite, la projection (modèle), avec un pic vers <b>${peakAge} ans</b>.` +
+    extra;
 }
 
 function animateCount(target) {

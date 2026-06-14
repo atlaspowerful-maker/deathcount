@@ -106,6 +106,17 @@ h1 {
   color: #fff;
 }
 
+.srcsel { margin-top: 8px; }
+
+.src-note {
+  max-width: 460px;
+  margin: 8px auto 0;
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.4;
+  text-align: center;
+}
+
 .form {
   display: flex;
   gap: 10px;

@@ -258,5 +258,84 @@ function birthsForYear(year) {
   return BIRTHS[y];
 }
 
+// ───────────────────────────────────────────────────────────────────────────
+// DONNÉES RÉELLES (fichier INSEE des personnes décédées, via deaths.js)
+//
+//   REAL_DEATHS[scope][annéeNaissance][sexe] = décès réels par âge.
+//   On hybride : on utilise le comptage RÉEL là où il est disponible (décès
+//   survenus entre 1970 et REAL_DEATHS_LAST_YEAR), et le MODÈLE ailleurs —
+//   c.-à-d. la part d'avant 1970 des générations anciennes, et la projection
+//   des années futures (décès pas encore survenus). Pour les générations nées
+//   en 1970+, toute la part « déjà vécue » est donc du réel exact.
+//     scope "metro" = personnes nées en France métropolitaine (cohorte de naissances).
+//     scope "all"   = toute personne décédée en France née cette année-là (immigrés inclus).
+// ───────────────────────────────────────────────────────────────────────────
+
+function realDeathArray(scope, birthYear, sex) {
+  if (typeof REAL_DEATHS === "undefined") return null;
+  const entry = REAL_DEATHS[scope] && REAL_DEATHS[scope][birthYear];
+  return entry && entry[sex] ? entry[sex] : null;
+}
+
+// Décès modélisés par âge (0..110) d'un sexe pour une génération.
+function modelDeathsBySexAge(birthYear, sex) {
+  const births = birthsForYear(birthYear);
+  const share = sex === "M" ? BIRTH_SHARE_MALE : 1 - BIRTH_SHARE_MALE;
+  const out = [];
+  let alive = births * share;
+  for (let a = 0; a < MAX_LIFE; a++) {
+    const d = alive * mortalityRateSex(sex, a, birthYear + a);
+    out.push(d);
+    alive -= d;
+  }
+  return out;
+}
+
+// Série de décès par âge d'un sexe, selon la source :
+//   "model"        → modèle pur ;
+//   "metro"/"all"  → réel là où dispo (1970..LAST), modèle avant et après.
+function deathSeriesSex(birthYear, sex, source) {
+  const model = modelDeathsBySexAge(birthYear, sex);
+  if (source === "model") return model;
+  const real = realDeathArray(source, birthYear, sex);
+  const out = [];
+  for (let a = 0; a < MAX_LIFE; a++) {
+    const year = birthYear + a;
+    if (real && year >= 1970 && year <= REAL_DEATHS_LAST_YEAR) {
+      out.push(real[a] || 0);
+    } else {
+      out.push(model[a]);
+    }
+  }
+  return out;
+}
+
+// Série agrégée selon le sexe choisi ("all" | "F" | "M").
+function deathSeries(birthYear, sexSel, source) {
+  if (sexSel === "all") {
+    const m = deathSeriesSex(birthYear, "M", source);
+    const f = deathSeriesSex(birthYear, "F", source);
+    return m.map((v, i) => v + f[i]);
+  }
+  return deathSeriesSex(birthYear, sexSel, source);
+}
+
+// Décès déjà survenus (somme jusqu'à l'âge actuel exclu) selon la source.
+function deathsSoFar(birthYear, sexSel, source, currentYear) {
+  const series = deathSeries(birthYear, sexSel, source);
+  const age = currentYear - birthYear;
+  let s = 0;
+  for (let a = 0; a < age && a < MAX_LIFE; a++) s += series[a];
+  return s;
+}
+
+// Effectif de référence de la cohorte (naissances métropole × part du sexe).
+function cohortBase(birthYear, sexSel) {
+  const t = birthsForYear(birthYear);
+  if (sexSel === "M") return t * BIRTH_SHARE_MALE;
+  if (sexSel === "F") return t * (1 - BIRTH_SHARE_MALE);
+  return t;
+}
+
 const MIN_YEAR = 1900;
 const MAX_YEAR = 2025;

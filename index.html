@@ -13,10 +13,10 @@
       <p class="eyebrow">Le compteur des survivants <span class="flag">🇫🇷 France</span></p>
       <h1>Tu as survécu à combien<br />de gens de ton âge&nbsp;?</h1>
       <p class="sub">
-        Entre ton année de naissance. À partir des naissances de cette
-        année-là <strong>en France</strong> et des tables de mortalité,
-        on estime à combien de personnes nées la même année que toi
-        tu as déjà survécu.
+        Entre ton année de naissance. À partir du <strong>fichier INSEE
+        des décès</strong>, on compte à combien de personnes nées la même
+        année que toi <strong>en France</strong> tu as déjà survécu — exact
+        pour les générations de 1970 et après, estimé avant.
       </p>
     </header>
 
@@ -26,6 +26,11 @@
         <button type="button" class="sex-opt" data-sex="F" role="radio" aria-checked="false">Une femme</button>
         <button type="button" class="sex-opt" data-sex="M" role="radio" aria-checked="false">Un homme</button>
       </div>
+      <div class="sexsel srcsel" role="radiogroup" aria-label="Périmètre">
+        <button type="button" class="sex-opt is-active" data-src="metro" role="radio" aria-checked="true">Nés en France</button>
+        <button type="button" class="sex-opt" data-src="all" role="radio" aria-checked="false">+ nés à l'étranger</button>
+      </div>
+      <p class="src-note">Chiffres réels du fichier INSEE des décès. «&nbsp;+ nés à l'étranger&nbsp;» compte aussi les personnes immigrées décédées en France.</p>
       <div class="form">
         <label for="year" class="visually-hidden">Année de naissance</label>
         <input
@@ -95,18 +100,20 @@
 
     <footer class="footer">
       <p>
-        Naissances&nbsp;: chiffres réels année par année (<a href="https://www.insee.fr/fr/statistiques/8582147" target="_blank" rel="noopener">INSEE</a>,
-        France métropolitaine). Décès&nbsp;: on fait vieillir la génération année
-        après année avec des taux de mortalité par époque calibrés sur les tables
+        Naissances&nbsp;: chiffres réels (<a href="https://www.insee.fr/fr/statistiques/8582147" target="_blank" rel="noopener">INSEE</a>,
+        France métropolitaine). Décès&nbsp;: <strong>comptés un par un</strong> dans le
+        <a href="https://www.data.gouv.fr/fr/datasets/fichier-des-personnes-decedees/" target="_blank" rel="noopener">fichier INSEE des personnes décédées</a>
+        (26&nbsp;millions de décès, 1970-2025). Pour la part d'avant 1970 et la
+        projection des années à venir, on complète par un modèle de mortalité
+        calibré sur les tables
         <a href="https://www.insee.fr/fr/statistiques/8313953" target="_blank" rel="noopener">INSEE</a>&nbsp;/
-        <a href="https://www.ined.fr/fr/tout-savoir-population/chiffres/france/mortalite-cause-deces/table-mortalite/" target="_blank" rel="noopener">INED</a>,
-        calibrés pour reproduire l'espérance de vie et la survie à 65&nbsp;ans réelles.
-        Le nombre de décès reste une estimation statistique (les surmortalités de
-        guerre ne sont pas isolées).
+        <a href="https://www.ined.fr/fr/tout-savoir-population/chiffres/france/mortalite-cause-deces/table-mortalite/" target="_blank" rel="noopener">INED</a>
+        (espérance de vie et survie à 65&nbsp;ans réelles, par sexe).
       </p>
     </footer>
   </main>
 
+  <script src="deaths.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
