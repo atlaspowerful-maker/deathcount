@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tu as survécu à combien de gens ?</title>
+  <meta name="description" content="Entre ton année de naissance et découvre à combien de personnes nées la même année que toi tu as survécu, d'après les statistiques de l'INSEE." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <p class="eyebrow">Le compteur des survivants <span class="flag">🇫🇷 France</span></p>
+      <h1>Tu as survécu à combien<br />de gens de ton âge&nbsp;?</h1>
+      <p class="sub">
+        Entre ton année de naissance. À partir des naissances de cette
+        année-là <strong>en France</strong> et des tables de mortalité,
+        on estime à combien de personnes nées la même année que toi
+        tu as déjà survécu.
+      </p>
+    </header>
+
+    <form id="form" class="form" autocomplete="off">
+      <label for="year" class="visually-hidden">Année de naissance</label>
+      <input
+        id="year"
+        name="year"
+        type="number"
+        inputmode="numeric"
+        placeholder="Ton année de naissance"
+        min="1900"
+        max="2025"
+      />
+      <button type="submit">Calculer</button>
+    </form>
+    <p id="error" class="error" role="alert"></p>
+
+    <section id="result" class="result" hidden>
+      <p class="result-lead">Tu as survécu à environ</p>
+      <p class="result-number"><span id="count">0</span></p>
+      <p class="result-tail">
+        personnes nées comme toi en <strong id="year-out"></strong>.
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value" id="births-out">—</span>
+          <span class="stat-label">bébés nés cette année-là</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="alive-out">—</span>
+          <span class="stat-label">encore en vie aujourd'hui</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="pct-out">—</span>
+          <span class="stat-label">de ta génération disparue</span>
+        </div>
+      </div>
+
+      <div class="bar" aria-hidden="true">
+        <div class="bar-dead" id="bar-dead"></div>
+        <div class="bar-alive" id="bar-alive"></div>
+      </div>
+      <div class="legend">
+        <span class="legend-item">
+          <span class="dot dot-dead"></span>
+          <span id="legend-dead">—</span> disparus
+        </span>
+        <span class="legend-item">
+          <span class="dot dot-alive"></span>
+          <span id="legend-alive">—</span> encore en vie
+        </span>
+      </div>
+      <p class="bar-caption" id="bar-caption"></p>
+    </section>
+
+    <footer class="footer">
+      <p>
+        Naissances&nbsp;: chiffres réels année par année (<a href="https://www.insee.fr/fr/statistiques/8582147" target="_blank" rel="noopener">INSEE</a>,
+        France métropolitaine). Décès&nbsp;: on fait vieillir la génération année
+        après année avec des taux de mortalité par époque calibrés sur les tables
+        <a href="https://www.insee.fr/fr/statistiques/8313953" target="_blank" rel="noopener">INSEE</a>&nbsp;/
+        <a href="https://www.ined.fr/fr/tout-savoir-population/chiffres/france/mortalite-cause-deces/table-mortalite/" target="_blank" rel="noopener">INED</a>.
+        Le nombre de décès reste une estimation statistique (les surmortalités de
+        guerre ne sont pas isolées).
+      </p>
+    </footer>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
