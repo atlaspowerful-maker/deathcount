@@ -150,14 +150,73 @@ function mortalityRate(age, year) {
   return qLo + t * (qHi - qLo);
 }
 
-// Probabilité de survie d'une génération née en `birthYear` jusqu'en 2026.
-function cohortSurvival(birthYear, currentYear) {
+// ───────────────────────────────────────────────────────────────────────────
+// AFFINAGE PAR SEXE
+//
+//   Femmes et hommes ont des courbes de mortalité très différentes : surmortalité
+//   masculine des jeunes adultes (accidents : q♂ jusqu'à ~1,5× q♀ vers 20 ans) et
+//   net avantage féminin aux grands âges. Comme la survie est un PRODUIT, faire la
+//   moyenne des quotients des deux sexes ne donne pas la même chose que la moyenne
+//   des deux survies (convexité) : le modèle « ensemble » sous-estime les décès
+//   d'environ 2 %. On modélise donc chaque sexe séparément, puis on recombine.
+//
+//   La courbe `MORTALITY_ERAS` (both-sexes) sert de base ; deux facteurs d'échelle
+//   par sexe et par époque (avant / après 65 ans) la déforment jusqu'à reproduire
+//   l'espérance de vie ET la survie à 65 ans réelles de CHAQUE sexe (Banque
+//   mondiale, SP.DYN.LE00.* et SP.DYN.TO65.*). La mortalité infantile, dont l'écart
+//   H/F est faible devant les autres incertitudes, reste celle de la série réelle.
+//
+//   Part des garçons à la naissance : ~51,2 % (sex-ratio ~105 garçons / 100 filles).
+// ───────────────────────────────────────────────────────────────────────────
+
+const BIRTH_SHARE_MALE = 0.512;
+
+// Facteurs [αavant65, αaprès65] appliqués à la courbe both-sexes, par époque et sexe.
+const SEX_SCALE = {
+  1900: { F: [0.9056, 1.1348], M: [1.1068, 1.1935] },
+  1930: { F: [0.8644, 0.8065], M: [1.1281, 1.5712] },
+  1950: { F: [0.8116, 0.8137], M: [1.2492, 1.3261] },
+  1970: { F: [0.6475, 0.8639], M: [1.4448, 1.5308] },
+  1990: { F: [0.5744, 0.7818], M: [1.4990, 1.4443] },
+  2010: { F: [0.6433, 0.7603], M: [1.4466, 1.3748] },
+  2023: { F: [0.6611, 0.7940], M: [1.3518, 1.2983] },
+};
+
+// Facteur d'échelle d'un sexe à un âge/année donnés (interpolé entre époques).
+function sexScale(sex, age, year) {
+  const eraKeys = Object.keys(SEX_SCALE).map(Number).sort((a, b) => a - b);
+  const yr = Math.max(eraKeys[0], Math.min(eraKeys[eraKeys.length - 1], year));
+  let lo = eraKeys[0], hi = eraKeys[eraKeys.length - 1];
+  for (let i = 0; i < eraKeys.length - 1; i++) {
+    if (yr >= eraKeys[i] && yr <= eraKeys[i + 1]) { lo = eraKeys[i]; hi = eraKeys[i + 1]; break; }
+  }
+  const idx = age < 65 ? 0 : 1;
+  const sLo = SEX_SCALE[lo][sex][idx], sHi = SEX_SCALE[hi][sex][idx];
+  if (hi === lo) return sLo;
+  const t = (yr - lo) / (hi - lo);
+  return sLo + t * (sHi - sLo);
+}
+
+// Quotient de mortalité d'un sexe ("F" ou "M") à un âge / une année.
+function mortalityRateSex(sex, age, year) {
+  if (age === 0) return infantMortality(year); // écart H/F faible : série commune
+  return Math.min(0.99, mortalityRate(age, year) * sexScale(sex, age, year));
+}
+
+// Survie d'un sexe pour une génération née en `birthYear`.
+function cohortSurvivalSex(sex, birthYear, currentYear) {
   const age = currentYear - birthYear;
   let s = 1;
-  for (let k = 0; k < age; k++) {
-    s *= 1 - mortalityRate(k, birthYear + k);
-  }
+  for (let k = 0; k < age; k++) s *= 1 - mortalityRateSex(sex, k, birthYear + k);
   return s;
+}
+
+// Survie d'ensemble d'une génération née en `birthYear` jusqu'à `currentYear` :
+// moyenne des survies des deux sexes, pondérée par le sex-ratio à la naissance.
+function cohortSurvival(birthYear, currentYear) {
+  const sM = cohortSurvivalSex("M", birthYear, currentYear);
+  const sF = cohortSurvivalSex("F", birthYear, currentYear);
+  return BIRTH_SHARE_MALE * sM + (1 - BIRTH_SHARE_MALE) * sF;
 }
 
 // Naissances réelles pour une année (année la plus proche si hors plage).

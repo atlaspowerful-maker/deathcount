@@ -111,14 +111,35 @@
       </div>
     </section>
 
-    <!-- Étape 4 : exemple interactif -->
+    <!-- Étape 4 : par sexe -->
     <section class="step">
-      <span class="step-num">4</span><h2>L'exemple, déroulé en entier</h2>
+      <span class="step-num">♀♂</span><h2>On sépare femmes et hommes</h2>
       <p>
-        Change l'année ci-dessous&nbsp;: le calcul se refait sous tes yeux. La table
-        montre quelques âges-repères, l'année civile correspondante, le quotient
-        q appliqué cette année-là, et la part de la génération encore vivante
-        à cet âge.
+        Femmes et hommes ne meurent ni au même âge ni au même rythme&nbsp;: forte
+        <strong>surmortalité masculine des jeunes adultes</strong> (vers 20&nbsp;ans,
+        q♂ peut valoir 1,5&nbsp;fois q♀, surtout à cause des accidents) et net
+        <strong>avantage féminin aux grands âges</strong>. Faire la moyenne des deux
+        avant de calculer écrase ces deux bosses.
+      </p>
+      <p>
+        Or la survie est un <em>produit</em>&nbsp;: la moyenne des survies des deux
+        sexes n'est pas la survie de la moyenne (c'est la convexité). On calcule donc
+        une survie pour chaque sexe, chacune calibrée sur l'espérance de vie et la
+        survie à 65&nbsp;ans <em>de ce sexe</em>, puis on recombine avec le sex-ratio
+        de naissance (~51,2&nbsp;% de garçons). Sans cette séparation, le compteur
+        <strong>sous-estimait les décès d'environ 2&nbsp;%</strong>.
+      </p>
+    </section>
+
+    <!-- Étape 5 : exemple interactif -->
+    <section class="step">
+      <span class="step-num">5</span><h2>L'exemple, déroulé en entier</h2>
+      <p>
+        Change l'année ci-dessous&nbsp;: le calcul se refait sous tes yeux. Pour
+        quelques âges-repères, la table donne l'année civile traversée, le quotient
+        de mortalité appliqué cette année-là <strong>pour chaque sexe</strong>, et la
+        part de la génération encore vivante (ensemble). L'écart entre les colonnes
+        q&nbsp;♀ et q&nbsp;♂ est exactement ce que l'étape précédente récupère.
       </p>
 
       <div class="try">
@@ -133,9 +154,10 @@
           <thead>
             <tr>
               <th>Âge</th>
-              <th>Année civile</th>
-              <th>q(âge) appliqué</th>
-              <th>Vivants à cet âge</th>
+              <th>Année</th>
+              <th>q ♀ (‰)</th>
+              <th>q ♂ (‰)</th>
+              <th>Vivants (ens.)</th>
             </tr>
           </thead>
           <tbody id="demo-rows"></tbody>
@@ -150,8 +172,10 @@
         <strong>Sources.</strong>
         Naissances&nbsp;: <a href="https://www.insee.fr/fr/statistiques/8582147" target="_blank" rel="noopener">INSEE — séries longues</a>
         (France métropolitaine).
-        Mortalité&nbsp;: <a href="https://www.insee.fr/fr/statistiques/8313953" target="_blank" rel="noopener">tables INSEE</a>
-        et <a href="https://www.ined.fr/fr/tout-savoir-population/chiffres/france/mortalite-cause-deces/table-mortalite/" target="_blank" rel="noopener">tables INED</a>.
+        Mortalité&nbsp;: <a href="https://www.insee.fr/fr/statistiques/8313953" target="_blank" rel="noopener">tables INSEE</a>,
+        <a href="https://www.ined.fr/fr/tout-savoir-population/chiffres/france/mortalite-cause-deces/table-mortalite/" target="_blank" rel="noopener">tables INED</a>
+        et <a href="https://donnees.banquemondiale.org/indicateur/SP.DYN.TO65.MA.ZS?locations=FR" target="_blank" rel="noopener">Banque mondiale</a>
+        (espérance de vie et survie à 65&nbsp;ans, par sexe, pour la calibration).
         Le détail du modèle est commenté en tête du fichier <code>data.js</code>.
       </p>
       <p style="margin-top:18px"><a href="index.html">← Revenir au compteur</a></p>
