@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Comprendre le calcul — Le compteur des survivants</title>
+  <meta name="description" content="La méthode complète : comment on estime à combien de personnes nées la même année que toi tu as survécu, à partir des naissances réelles et des tables de mortalité." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app method">
+    <a class="back-link" href="index.html">← Retour au compteur</a>
+
+    <header class="hero" style="text-align:left">
+      <p class="eyebrow">Comprendre le calcul</p>
+      <h1>D'où sortent ces chiffres&nbsp;?</h1>
+      <p class="lead">
+        Aucune magie, aucune base de données cachée&nbsp;: deux ingrédients publics
+        (les naissances réelles et les tables de mortalité de l'INSEE/INED) et une
+        seule opération répétée année après année. On la déroule ici en entier,
+        avec un exemple que tu peux faire varier.
+      </p>
+    </header>
+
+    <!-- Étape 0 : la formule -->
+    <section class="step">
+      <span class="step-num">∑</span><h2>L'idée en une ligne</h2>
+      <p>
+        Pour une personne née l'année <span class="muted">Y</span>, on part du
+        <strong>nombre réel de bébés nés cette année-là</strong>, puis on fait
+        «&nbsp;vieillir&nbsp;» cette génération&nbsp;: chaque année qui passe, une petite
+        fraction disparaît. Ce qui reste en 2026, ce sont les survivants&nbsp;; le reste,
+        ce sont les gens à qui tu as survécu.
+      </p>
+      <div class="formula">
+        décès estimés = <span class="var">naissances(Y)</span> × ( 1 − <span class="var">survie(Y)</span> )<br /><br />
+        <span class="cmt">// la survie est un produit le long des années de vie :</span><br />
+        <span class="var">survie(Y)</span> = ∏<sub>k=0…A−1</sub> ( 1 − <span class="var">q</span>(âge&nbsp;k, année&nbsp;Y+k) )<br />
+        <span class="cmt">// A = âge atteint en 2026 ;  q = probabilité de mourir dans l'année</span>
+      </div>
+    </section>
+
+    <!-- Étape 1 : naissances -->
+    <section class="step">
+      <span class="step-num">1</span><h2>Les naissances&nbsp;: des chiffres réels</h2>
+      <p>
+        Le point de départ n'est pas une estimation. Ce sont les
+        <strong>naissances vivantes enregistrées en France métropolitaine</strong>,
+        année par année, telles que publiées par l'INSEE (séries longues). Pas
+        d'interpolation&nbsp;: 1950 vaut exactement 862&nbsp;310, 1994 exactement
+        710&nbsp;993. On lit la valeur dans la table.
+      </p>
+      <p class="muted" style="font-size:.9rem">
+        C'est aussi pour ça que les creux de l'Histoire sont visibles&nbsp;: la chute de
+        1915-1919 (Première Guerre mondiale), le baby-boom à partir de 1946.
+      </p>
+    </section>
+
+    <!-- Étape 2 : vieillir la génération -->
+    <section class="step">
+      <span class="step-num">2</span><h2>On fait vieillir la génération, an par an</h2>
+      <p>
+        On suit la génération le long de sa <strong>diagonale de Lexis</strong>&nbsp;:
+        à 0&nbsp;an elle traverse l'année Y, à 1&nbsp;an l'année Y+1, à 2&nbsp;ans
+        l'année Y+2… À chaque pas, on retire la part qui décède dans l'année,
+        donnée par le quotient de mortalité <span class="muted">q(âge, année)</span>.
+      </p>
+      <p>
+        Une génération née en <strong>1918</strong> subit d'abord une très forte
+        mortalité infantile (les nourrissons d'alors), puis les conditions
+        s'améliorent à mesure qu'elle vieillit dans un pays qui progresse. Une
+        génération née en <strong>2010</strong> démarre, elle, avec une mortalité
+        infantile minuscule. Le même barème ne s'applique donc jamais deux fois&nbsp;:
+        il dépend de l'<em>âge</em> ET de l'<em>année civile</em> traversée.
+      </p>
+    </section>
+
+    <!-- Étape 3 : tables de mortalité -->
+    <section class="step">
+      <span class="step-num">3</span><h2>Le quotient de mortalité&nbsp;: q(âge, époque)</h2>
+      <p>
+        <span class="muted">q(âge, année)</span> est la probabilité, pour quelqu'un
+        de vivant à un âge donné, de mourir avant son prochain anniversaire. On en
+        connaît la forme grâce aux tables de mortalité&nbsp;: très bas dans l'enfance
+        et la jeunesse, il remonte fortement après 60-70&nbsp;ans.
+      </p>
+      <p>
+        On stocke ce barème pour <strong>7 époques repères</strong> (1900, 1930,
+        1950, 1970, 1990, 2010, 2023), calibrées sur l'espérance de vie et la
+        mortalité infantile réelles de chaque période. Pour un âge et une année qui
+        tombent entre deux repères, on fait une <strong>double interpolation
+        linéaire</strong>&nbsp;: d'abord entre deux âges du barème, puis entre les deux
+        époques encadrantes. Le résultat est une surface continue q(âge, année).
+      </p>
+      <div class="note">
+        <strong>Honnêteté méthodo.</strong> Ces quotients sont des estimations
+        calibrées, pas le fichier INSEE brut âge-par-âge. Et ils n'isolent pas les
+        <strong>surmortalités de guerre</strong> (1914-18, 1939-45)&nbsp;: pour les
+        générations concernées, le nombre de décès est légèrement sous-estimé.
+        L'ordre de grandeur reste juste&nbsp;; le chiffre exact reste une estimation.
+      </div>
+    </section>
+
+    <!-- Étape 4 : exemple interactif -->
+    <section class="step">
+      <span class="step-num">4</span><h2>L'exemple, déroulé en entier</h2>
+      <p>
+        Change l'année ci-dessous&nbsp;: le calcul se refait sous tes yeux. La table
+        montre quelques âges-repères, l'année civile correspondante, le quotient
+        q appliqué cette année-là, et la part de la génération encore vivante
+        à cet âge.
+      </p>
+
+      <div class="try">
+        <div class="try-controls">
+          <label for="demo-year">Année de naissance</label>
+          <input id="demo-year" type="number" min="1900" max="2025" value="1950" />
+        </div>
+
+        <p class="try-summary" id="demo-summary"></p>
+
+        <table class="method-table">
+          <thead>
+            <tr>
+              <th>Âge</th>
+              <th>Année civile</th>
+              <th>q(âge) appliqué</th>
+              <th>Vivants à cet âge</th>
+            </tr>
+          </thead>
+          <tbody id="demo-rows"></tbody>
+        </table>
+        <p class="table-caption" id="demo-caption"></p>
+      </div>
+    </section>
+
+    <!-- Sources -->
+    <footer class="footer" style="text-align:left">
+      <p>
+        <strong>Sources.</strong>
+        Naissances&nbsp;: <a href="https://www.insee.fr/fr/statistiques/8582147" target="_blank" rel="noopener">INSEE — séries longues</a>
+        (France métropolitaine).
+        Mortalité&nbsp;: <a href="https://www.insee.fr/fr/statistiques/8313953" target="_blank" rel="noopener">tables INSEE</a>
+        et <a href="https://www.ined.fr/fr/tout-savoir-population/chiffres/france/mortalite-cause-deces/table-mortalite/" target="_blank" rel="noopener">tables INED</a>.
+        Le détail du modèle est commenté en tête du fichier <code>data.js</code>.
+      </p>
+      <p style="margin-top:18px"><a href="index.html">← Revenir au compteur</a></p>
+    </footer>
+  </main>
+
+  <script src="data.js"></script>
+  <script src="calcul.js"></script>
+</body>
+</html>

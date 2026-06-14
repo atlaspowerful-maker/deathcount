@@ -9,10 +9,12 @@ et de taux de mortalité par époque calibrés sur les tables INSEE/INED, on est
 
 | Fichier | Rôle |
 |---------|------|
-| `index.html` | structure de la page |
-| `style.css` | styles |
+| `index.html` | structure de la page (compteur) |
+| `calcul.html` | page « Comprendre le calcul » : méthode détaillée + exemple interactif |
+| `style.css` | styles (partagés par les deux pages) |
 | `data.js` | données démographiques + modèle de survie (méthode documentée en tête de fichier) |
-| `app.js` | logique de l'interface |
+| `app.js` | logique du compteur |
+| `calcul.js` | exemple chiffré interactif de la page méthode |
 
 ## Déploiement
 
