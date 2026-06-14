@@ -20,18 +20,25 @@
       </p>
     </header>
 
-    <form id="form" class="form" autocomplete="off">
-      <label for="year" class="visually-hidden">Année de naissance</label>
-      <input
-        id="year"
-        name="year"
-        type="number"
-        inputmode="numeric"
-        placeholder="Ton année de naissance"
-        min="1900"
-        max="2025"
-      />
-      <button type="submit">Calculer</button>
+    <form id="form" autocomplete="off">
+      <div class="sexsel" role="radiogroup" aria-label="Sexe">
+        <button type="button" class="sex-opt is-active" data-sex="all" role="radio" aria-checked="true">Tout le monde</button>
+        <button type="button" class="sex-opt" data-sex="F" role="radio" aria-checked="false">Une femme</button>
+        <button type="button" class="sex-opt" data-sex="M" role="radio" aria-checked="false">Un homme</button>
+      </div>
+      <div class="form">
+        <label for="year" class="visually-hidden">Année de naissance</label>
+        <input
+          id="year"
+          name="year"
+          type="number"
+          inputmode="numeric"
+          placeholder="Ton année de naissance"
+          min="1900"
+          max="2025"
+        />
+        <button type="submit">Calculer</button>
+      </div>
     </form>
     <p id="error" class="error" role="alert"></p>
 
@@ -39,13 +46,13 @@
       <p class="result-lead">Tu as survécu à environ</p>
       <p class="result-number"><span id="count">0</span></p>
       <p class="result-tail">
-        personnes nées comme toi en <strong id="year-out"></strong>.
+        <span id="noun-out">personnes</span> <span id="born-out">nées</span> comme toi en <strong id="year-out"></strong>.
       </p>
 
       <div class="stats">
         <div class="stat">
           <span class="stat-value" id="births-out">—</span>
-          <span class="stat-label">bébés nés cette année-là</span>
+          <span class="stat-label" id="births-label">bébés nés cette année-là</span>
         </div>
         <div class="stat">
           <span class="stat-value" id="alive-out">—</span>
@@ -72,6 +79,9 @@
         </span>
       </div>
       <p class="bar-caption" id="bar-caption"></p>
+
+      <figure class="chart" id="chart"></figure>
+      <p class="chart-caption" id="chart-caption"></p>
     </section>
 
     <a class="explain-banner" href="calcul.html">

@@ -219,6 +219,37 @@ function cohortSurvival(birthYear, currentYear) {
   return BIRTH_SHARE_MALE * sM + (1 - BIRTH_SHARE_MALE) * sF;
 }
 
+// Répartition des décès d'une génération par âge, sur toute la vie (0 à 110 ans).
+// sex = "F" | "M" | null (ensemble, pondéré par le sex-ratio à la naissance).
+// Renvoie un tableau : décès[a] = nombre de personnes de la génération qui
+// meurent à l'âge a. Les âges au-delà de l'âge actuel sont une projection
+// (mortalité figée à l'époque la plus récente).
+const MAX_LIFE = 111;
+function cohortDeathsByAge(birthYear, sex) {
+  const births = birthsForYear(birthYear);
+  const out = [];
+  if (sex) {
+    const share = sex === "M" ? BIRTH_SHARE_MALE : 1 - BIRTH_SHARE_MALE;
+    let alive = births * share;
+    for (let a = 0; a < MAX_LIFE; a++) {
+      const d = alive * mortalityRateSex(sex, a, birthYear + a);
+      out.push(d);
+      alive -= d;
+    }
+  } else {
+    let aliveM = births * BIRTH_SHARE_MALE;
+    let aliveF = births * (1 - BIRTH_SHARE_MALE);
+    for (let a = 0; a < MAX_LIFE; a++) {
+      const dM = aliveM * mortalityRateSex("M", a, birthYear + a);
+      const dF = aliveF * mortalityRateSex("F", a, birthYear + a);
+      out.push(dM + dF);
+      aliveM -= dM;
+      aliveF -= dF;
+    }
+  }
+  return out;
+}
+
 // Naissances réelles pour une année (année la plus proche si hors plage).
 function birthsForYear(year) {
   if (BIRTHS[year] != null) return BIRTHS[year];
