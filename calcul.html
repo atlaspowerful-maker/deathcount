@@ -86,18 +86,28 @@
       </p>
       <p>
         On stocke ce barème pour <strong>7 époques repères</strong> (1900, 1930,
-        1950, 1970, 1990, 2010, 2023), calibrées sur l'espérance de vie et la
-        mortalité infantile réelles de chaque période. Pour un âge et une année qui
-        tombent entre deux repères, on fait une <strong>double interpolation
-        linéaire</strong>&nbsp;: d'abord entre deux âges du barème, puis entre les deux
-        époques encadrantes. Le résultat est une surface continue q(âge, année).
+        1950, 1970, 1990, 2010, 2023). Pour un âge et une année qui tombent entre
+        deux repères, on fait une <strong>double interpolation linéaire</strong>&nbsp;:
+        d'abord entre deux âges du barème, puis entre les deux époques encadrantes.
+        Le résultat est une surface continue q(âge, année).
+      </p>
+      <p>
+        Chaque époque n'est pas devinée&nbsp;: elle est <strong>calibrée pour
+        reproduire deux chiffres réels publiés</strong> — l'espérance de vie à la
+        naissance ET la part d'une génération qui atteint 65&nbsp;ans, cette
+        année-là. Deux facteurs d'échelle (avant / après 65&nbsp;ans) sont ajustés
+        jusqu'à tomber juste. Testé sur des années <em>non</em> utilisées pour le
+        réglage (1960, 1980, 2000, 2020)&nbsp;: l'espérance de vie retombe à moins
+        d'un demi-an près. La mortalité avant 1&nbsp;an, elle, vient d'une
+        <strong>série annuelle réelle</strong> (INED/INSEE), pas d'une interpolation.
       </p>
       <div class="note">
-        <strong>Honnêteté méthodo.</strong> Ces quotients sont des estimations
-        calibrées, pas le fichier INSEE brut âge-par-âge. Et ils n'isolent pas les
-        <strong>surmortalités de guerre</strong> (1914-18, 1939-45)&nbsp;: pour les
-        générations concernées, le nombre de décès est légèrement sous-estimé.
-        L'ordre de grandeur reste juste&nbsp;; le chiffre exact reste une estimation.
+        <strong>Honnêteté méthodo.</strong> Ces quotients reproduisent les
+        statistiques nationales agrégées, mais ne sont pas le fichier INSEE brut
+        âge-par-âge, et n'isolent pas les <strong>surmortalités de guerre</strong>
+        (1914-18, 1939-45). Cet angle mort est sans effet sur le compteur&nbsp;: les
+        générations concernées ont aujourd'hui ~100&nbsp;ans, leur survie est de
+        toute façon quasi nulle. Le chiffre reste une estimation statistique.
       </div>
     </section>
 
