@@ -27,13 +27,13 @@ Ce projet **n'a pas son backlog à lui** : ses tickets vivent dans le **backlog 
 
 ```bash
 ssh root@atlas.bourdat.fr \
-  "grep -nE '^\[P[012]\]\[(todo|progress)\] #deathcount ' /root/.openclaw/server-context/backlog.md"
+  "grep -nE '^\[(P[0-4]|quickwin|wishlist)\]\[(todo|progress)\] #deathcount ' /root/.openclaw/server-context/backlog.md"
 ```
 
 Pour chaque ticket traité : **(option)** flip `[todo]` → `[progress]` côté serveur ; **traite-le** ici (branche-par-session) ; **marque-le `done` sur le serveur** (la source de vérité) une fois fini **et prouvé** :
 ```bash
 ssh root@atlas.bourdat.fr \
-  "sed -i 's/^\[P[012]\]\[\(todo\|progress\)\] #deathcount Partage du résultat/[P2][done] #deathcount Partage du résultat/' \
+  "sed -i 's/^\[(P[0-4]|quickwin|wishlist)\]\[\(todo\|progress\)\] #deathcount Partage du résultat/[P2][done] #deathcount Partage du résultat/' \
    /root/.openclaw/server-context/backlog.md"
 ```
 Puis **signifie-le à Loïc** : « ✅ ticket *Partage du résultat* traité (commit `…`), passé en `done` ». Il le verra aussi sur le hub. Ne touche **que** tes lignes `#deathcount` ; ne ferme jamais un ticket non prouvé.
