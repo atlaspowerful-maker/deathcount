@@ -1,6 +1,6 @@
 # Instructions pour Claude — projet deathcount
 
-> Créé depuis `~/Desktop/Openclaw/templates/CLAUDE-nouveau-projet.md` (2026-06-15).
+> Créé depuis `~/Desktop/Dev/Openclaw/templates/CLAUDE-nouveau-projet.md` (2026-06-15).
 > **Setup terminé (2026-06-14)** : page codée + déployée. Rôle Ansible `deathcount` (atlas-infra),
 > route Caddy + cron auto-deploy actifs. Site live : `https://lab.bourdat.fr/deathcount/`.
 
@@ -15,7 +15,7 @@
 | Auth | publique |
 | Services | aucun (site statique servi par Caddy) |
 | Données | aucune (pas de DB, pas de secret ; données INSEE/INED embarquées dans `data.js`) |
-| Rôle Ansible | `~/Desktop/atlas-infra/roles/deathcount/` — cron pull-only `*/5` (pas de build, pas de webhook) |
+| Rôle Ansible | `~/Desktop/Dev/atlas-infra/roles/deathcount/` — cron pull-only `*/5` (pas de build, pas de webhook) |
 
 > **Cas statique pur** : HTML/CSS/JS vanilla, tout côté navigateur. Pas de backend / ports / env-secrets / tools-auth / backups. Déploiement = `git pull` du cron (≤ 5 min après un push sur `main`), **aucun build**. Le but : estimer, depuis les naissances réelles INSEE par année + taux de mortalité calibrés, combien de gens de ta génération ont déjà disparu (méthode documentée en tête de `data.js`).
 
@@ -44,17 +44,17 @@ Ce projet est hébergé sur **lab.bourdat.fr** (VPS `161.97.72.173`), serveur pa
 
 | Sujet | Où |
 |-------|----|
-| Setup d'un nouveau projet (conventions, ports, checklist) | `~/Desktop/Openclaw/13_NOUVEAU_PROJET.md` |
-| Carte du serveur : qui tourne où, ports, frontières entre apps | `~/Desktop/Openclaw/08_PROJECTS.md` |
-| Où vivent les secrets, procédures de rotation | `~/Desktop/Openclaw/06_SECRETS.md` |
-| Index complet de la doc serveur | `~/Desktop/Openclaw/README.md` |
-| **IaC Ansible** (état désiré du serveur, rôles, vault) | `~/Desktop/atlas-infra/` — méthode dans `docs/METHODOLOGY.md` |
+| Setup d'un nouveau projet (conventions, ports, checklist) | `~/Desktop/Dev/Openclaw/13_NOUVEAU_PROJET.md` |
+| Carte du serveur : qui tourne où, ports, frontières entre apps | `~/Desktop/Dev/Openclaw/08_PROJECTS.md` |
+| Où vivent les secrets, procédures de rotation | `~/Desktop/Dev/Openclaw/06_SECRETS.md` |
+| Index complet de la doc serveur | `~/Desktop/Dev/Openclaw/README.md` |
+| **IaC Ansible** (état désiré du serveur, rôles, vault) | `~/Desktop/Dev/atlas-infra/` — méthode dans `docs/METHODOLOGY.md` |
 
 La doc peut être périmée : si une commande ou un état est critique, vérifier sur le serveur avant d'affirmer.
 
 ## Règle de pérennité — Ansible + doc, toujours
 
-Toute modif serveur liée à ce projet doit être **portée dans Ansible** (`~/Desktop/atlas-infra`, rôle `roles/deathcount/`) et **reflétée dans la doc** (`~/Desktop/Openclaw/08_PROJECTS.md`), dans la même tâche. Ce qui existe sur le serveur mais pas dans Ansible sera écrasé au prochain `ansible-playbook bootstrap.yml`. (Ici, le déploiement du contenu = simple `git pull` du cron : pousser sur `main` suffit, pas de changement serveur.)
+Toute modif serveur liée à ce projet doit être **portée dans Ansible** (`~/Desktop/Dev/atlas-infra`, rôle `roles/deathcount/`) et **reflétée dans la doc** (`~/Desktop/Dev/Openclaw/08_PROJECTS.md`), dans la même tâche. Ce qui existe sur le serveur mais pas dans Ansible sera écrasé au prochain `ansible-playbook bootstrap.yml`. (Ici, le déploiement du contenu = simple `git pull` du cron : pousser sur `main` suffit, pas de changement serveur.)
 
 ## Règle de doc vivante
 

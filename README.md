@@ -29,6 +29,6 @@ Hébergé sur le serveur lab/asimov sous **`https://lab.bourdat.fr/deathcount/`*
 - Front statique servi directement par Caddy depuis `/var/www/deathcount/` (clone de ce repo).
 - **Déployer = push sur `main`** : un cron serveur (`*/5 min`) pull GitHub et met le site à jour en ≤ 5 min. Pas de build, pas de webhook.
 - IaC : rôle Ansible `deathcount` dans `atlas-infra` ; route Caddy dans le rôle `caddy`.
-- Doc serveur : `~/Desktop/Openclaw/08_PROJECTS.md`.
+- Doc serveur : `~/Desktop/Dev/Openclaw/08_PROJECTS.md`.
 
 Source données : INSEE (naissances séries longues, tables de mortalité) + INED (tables de mortalité).
