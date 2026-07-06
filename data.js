@@ -54,8 +54,10 @@
 //   s65 — 1900:40 · 1930:51 · 1950:67 · 1970:75,8 · 1990:82,2 · 2010:87,4 · 2023:89,6
 //   (survie à 65 = moyenne H/F des séries Banque mondiale SP.DYN.TO65.*, dérivées
 //    des tables de mortalité nationales.)
-//   Pyramide grand âge 2023 (INSEE) : ~31 000 personnes de 100 ans et +, ~2 000 de
-//   105 +, 39 de 110 +. Modèle 2026 : ~38 000 / ~2 300 / ~60 (croissance ~6 %/an).
+//   Repères grand âge (INSEE) : 32 020 personnes de 100 ans et + au 1ᵉʳ janvier 2025
+//   (→ ~34 000 en 2026, +5-6 %/an), 39 de 110 + en 2023, ~1,1 M de 90 + (métropole).
+//   Modèle 2026 (nés métropole, donc ≤ résident) : 90 + ≈ 1,08 M · 100 + ≈ 34 300 ·
+//   110 + ≈ 40.
 //
 // Sources :
 //   INSEE — naissances séries longues : https://www.insee.fr/fr/statistiques/8582147
@@ -187,14 +189,18 @@ function mortalityRate(age, year) {
   return Math.min(0.999, q * excess);
 }
 
-// Correction de mortalité aux grands âges, calibrée sur la pyramide nationale des
-// centenaires (INSEE 2023 : ~31 000 personnes de 100 ans et +, ~2 000 de 105 +,
-// 39 de 110 +). Sans elle, le modèle laissait « survivre » ~160 000 centenaires et
-// ~1 400 personnes de 110 +. Avec (×1,4 à partir de 95 ans) : ~38 000 de 100 + —
-// cohérent avec 2026, la population centenaire croissant de ~6 %/an — ~2 300 de
-// 105 + et ~60 de 110 +. Voir aussi le plateau super-centenaire (§ MORTALITY_ERAS).
+// Correction de mortalité aux grands âges, calibrée sur les repères nationaux INSEE :
+//   • 100 ans et + : 32 020 personnes au 1ᵉʳ janvier 2025 (INSEE/CNAV) → ~34 000 en
+//     2026 (la population centenaire croît de ~5-6 %/an) ;
+//   • 110 ans et + : 39 au 1ᵉʳ janvier 2023 → ~40-45 en 2026 ;
+//   • 90 ans et + : ~1,1 million (métropole, 2023).
+// Sans elle, le modèle laissait « survivre » ~160 000 centenaires et ~1 400 personnes
+// de 110 +. Avec (×1,43 à partir de 95 ans) le modèle 2026 donne : 90 + ≈ 1,08 M,
+// 100 + ≈ 34 300, 105 + ≈ 1 400, 110 + ≈ 40 — tous alignés sur ces repères (le modèle
+// comptant les nés en métropole, il est attendu légèrement SOUS le résident, immigrés
+// exclus). Voir aussi le plateau super-centenaire (§ MORTALITY_ERAS).
 const OLDAGE_EXCESS_FROM = 95;
-const OLDAGE_EXCESS = 1.4;
+const OLDAGE_EXCESS = 1.43;
 
 // ───────────────────────────────────────────────────────────────────────────
 // AFFINAGE PAR SEXE

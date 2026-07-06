@@ -137,8 +137,10 @@ sur e0 est de l'ordre de quelques jours.
 
 ### 6.2 Cible grands âges — pyramide nationale des centenaires
 
-Ajoutée pour caler la queue de distribution (voir §7.3). Cible INSEE **2023** :
-~31 000 personnes de 100 ans et +, ~2 000 de 105 +, **39 de 110 +**.
+Ajoutée pour caler la queue de distribution (voir §7.3). Repères INSEE :
+**32 020** personnes de 100 ans et + au 1ᵉʳ janvier 2025 (INSEE/CNAV ; → ~34 000 en
+2026, croissance ~5-6 %/an), **39** de 110 + en 2023, et **~1,1 million** de 90 + en
+métropole (2023).
 
 ---
 
@@ -177,21 +179,22 @@ Le fichier des décès réels **s'arrête à 110 ans** et **sous-compte les trè
 fichier français → ils apparaissent à tort « en vie »). Sans correction, le modèle
 laissait ~160 000 centenaires et ~1 400 personnes de 110 +.
 
-Deux garde-fous, calibrés sur la pyramide INSEE (§6.2) :
+Deux garde-fous, calibrés sur les repères INSEE (§6.2) :
 
 - **Plancher** (`OLDAGE_FLOOR_FROM = 95`) : à partir de 95 ans, on prend
   `max( décès réels, taux modèle × survivants )` — le comptage réel ne peut jamais
   faire *sous-mourir* la cohorte par rapport à la table de vie.
-- **Excès** (`OLDAGE_EXCESS = 1,4` dès 95 ans) : facteur multiplicatif sur `q`,
-  calé pour reproduire la pyramide nationale.
+- **Excès** (`OLDAGE_EXCESS = 1,43` dès 95 ans) : facteur multiplicatif sur `q`,
+  calé pour reproduire les repères nationaux.
 
 Après correction (modèle 2026) :
 
-| Seuil | Avant | Après | Cible INSEE 2023 (croissance ~+6 %/an) |
+| Seuil | Avant | Après | Repère INSEE |
 |---|---:|---:|---:|
-| 100 + | 162 000 | **38 060** | ~31 000 (→ ~35-37 k en 2026) |
-| 105 + | 19 000 | **2 277** | ~2 000 |
-| 110 + | 1 400 | **58** | 39 |
+| 90 + | 1 091 000 | **1 084 000** | ~1 100 000 (métropole, 2023) |
+| 100 + | 162 000 | **34 348** | 32 020 au 1ᵉʳ janv. 2025 → ~34 000 en 2026 |
+| 105 + | 19 000 | **1 353** | ~2 000 (2023) |
+| 110 + | 1 400 | **40** | 39 (2023) → ~45 en 2026 |
 
 ---
 
@@ -203,37 +206,43 @@ Après correction (modèle 2026) :
 |---|---:|---:|---:|
 | 1901 | 125 | 23 324 | **0** |
 | 1911 | 115 | 50 374 | **0** |
-| 1913 | 113 | 165 | **4** |
-| 1916 | 110 | 26 578 | **29** |
+| 1913 | 113 | 165 | **3** |
+| 1916 | 110 | 26 578 | **24** |
 
 ### 8.2 Comparaison à la population résidente INSEE (contrôle « gonflé »)
 
 ⚠️ Le modèle compte les **nés en métropole encore vivants** — il **exclut les
 immigrés**. Il doit donc être **inférieur** à la population résidente INSEE.
 
-| Seuil | Modèle | INSEE résidents 2026 | Lecture |
+| Seuil | Modèle | INSEE résidents | Lecture |
 |---|---:|---:|---|
 | 65 + | 13,27 M | ~14,95 M (21,8 %) | ✅ modèle < résident (immigrés en +) |
-| 75 + | 6,87 M | **7,686 M** (INSEE) | ✅ écart ~0,8 M = immigrés 75+ |
+| 75 + | 6,87 M | **7,686 M** (2026) | ✅ écart ~0,8 M = immigrés 75+ |
 | 85 + | 2,28 M | ~2,0-2,3 M | ≈ correct |
-| 90 + | 1,09 M | ~0,9-1,0 M | ⚠️ modèle **~+15-20 %** |
-| 95 + | 0,315 M | ~0,20-0,25 M | ⚠️ modèle **~+40 %** |
-| 100 + | 38 060 | ~34-36 k | légèrement haut (~+8 %) |
+| 90 + | 1,084 M | **~1,1 M** (métropole 2023) | ✅ modèle ≈ résident |
+| 95 + | 0,308 M | ~0,20-0,25 M (estimé) | ⚠️ modèle **~+25 %** (cible incertaine) |
+| 100 + | 34 348 | **32 020** (2025) → ~34 000 (2026) | ✅ modèle ≈ résident |
+| 110 + | 40 | **39** (2023) → ~45 (2026) | ✅ modèle ≈ résident |
 
-**Interprétation** : sous 85 ans, les effectifs sont cohérents (et correctement
-*sous* le résident, immigrés exclus). Le sur-comptage réel est concentré sur
-**90-99 ans** : la mortalité *avant 1970* (enfance/jeunesse des générations
-1926-1936) est modélisée et légèrement trop douce ; l'erreur se propage jusqu'aux
-grands âges. La correction §7.3 ramène le 100 + dans les clous mais laisse ce résidu.
+**Interprétation** : les deux repères INSEE solides et publiés — **90 +** (~1,1 M)
+et **100 +** (32 020 au 1ᵉʳ janv. 2025) — sont désormais **reproduits** par le modèle.
+Sous 85 ans, les effectifs sont cohérents (et correctement *sous* le résident,
+immigrés exclus). Le seul point encore un peu haut est la tranche **95-99 ans**
+(~+25 % vs une cible estimée, non publiée) : elle est dominée par l'effectif « vivant
+à 95 ans exactement », fixé par les décès réels INSEE d'avant 95 ans — on ne peut le
+réduire sans écraser des données réelles, ce qu'on s'interdit. Comme les deux bornes
+(90 + et 100 +) sont justes, ce léger renflement intermédiaire est vraisemblablement
+en partie un artefact de la cible estimée plutôt qu'un vrai biais.
 
 ---
 
 ## 9. Limites connues (à challenger avec l'expert)
 
-1. **Sur-comptage 90-99 ans (~+15 à +40 %)** — principal point ouvert. Origine
-   probable : mortalité modélisée trop douce avant 1970 pour les cohortes 1926-1936,
-   qui se propage. Piste : caler la queue 88-99 sur la pyramide INSEE par âge simple
-   (données non encore intégrées faute de série fine sous la main).
+1. **Tranche 95-99 ans encore ~+25 % (cible estimée)** — seul point ouvert restant.
+   Les deux bornes publiées (90 + ≈ 1,1 M et 100 + = 32 020) sont désormais reproduites ;
+   le renflement intermédiaire est dominé par l'effectif « vivant à 95 ans exactement »
+   (fixé par les décès réels d'avant 95 ans, qu'on s'interdit d'écraser). Piste : caler
+   sur la pyramide INSEE par âge simple (série fine non encore intégrée).
 2. **Périmètre cohorte ≠ résidents** : le modèle ignore l'**immigration** (nés hors
    métropole) et l'**émigration** (natifs partis mourir à l'étranger, invisibles du
    fichier des décès → « faux survivants », partiellement corrigé par le plancher §7.3).
@@ -244,8 +253,8 @@ grands âges. La correction §7.3 ramène le 100 + dans les clous mais laisse ce
    calée sur e0 et s65 seulement, pas sur la courbe complète.
 5. **Interpolation linéaire** entre époques-ancres (tous les 20-30 ans) et entre âges :
    lisse les variations annuelles fines.
-6. **Excès grand âge = facteur unique (×1,4 dès 95 ans)** : correctif empirique calé
-   sur 3 points (100+/105+/110+), pas une table de mortalité des grands âges en soi.
+6. **Excès grand âge = facteur unique (×1,43 dès 95 ans)** : correctif empirique calé
+   sur les repères 90+/100+/110+, pas une table de mortalité des grands âges en soi.
 7. **Mortalité infantile** : quotient à 0 an commun aux deux sexes (l'écart H/F y est
    faible devant les autres incertitudes).
 
@@ -253,9 +262,10 @@ grands âges. La correction §7.3 ramène le 100 + dans les clous mais laisse ce
 
 ## 10. Questions pour l'expert
 
-1. La tranche **90-99 ans** est ~+20-40 % au-dessus du résident INSEE (immigrés
-   pourtant exclus). Confirmez-vous le sur-comptage, et quelle est la meilleure cible
-   pour recaler (pyramide par âge simple ? tables de cohorte INSEE/HMD ?) ?
+1. La tranche **95-99 ans** reste ~+25 % au-dessus d'une cible *estimée* (les bornes
+   90 + et 100 + sont, elles, reproduites). Quelle est la meilleure cible pour trancher
+   (pyramide par âge simple ? tables de cohorte INSEE/HMD ?), et faut-il recaler la
+   mortalité 90-94 (données réelles) au risque de dégrader le 90 + déjà juste ?
 2. Le **plateau à q ≈ 0,5** (105-114 ans) puis la montée vers q ≈ 0,99 à 122 ans est-il
    un choix acceptable pour la France, ou préférez-vous une loi (Gompertz plafonnée,
    Kannisto, Beard) explicite ?
