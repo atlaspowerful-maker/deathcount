@@ -30,6 +30,21 @@
 //     Deux facteurs d'échelle par époque (avant / après 65 ans) ont été ajustés
 //     numériquement jusqu'à matcher ces deux cibles. Vérifié hors échantillon
 //     (1960, 1980, 2000, 2020) : e0 à <0,5 an près, survie à 65 à <0,8 pt près.
+//   • Grands âges (≥ 95 ans) — fermeture de la table jusqu'au plafond biologique.
+//     Deux corrections indépendantes du bloc e0/s65 ci-dessus (elles ne touchent
+//     quasiment pas ces cibles, trop peu de gens atteignant 95 ans) :
+//       — la courbe q est prolongée jusqu'à q≈0,99 à 122 ans (record humain 122,
+//         doyen·ne français·e ~118), plateau super-centenaire ~0,5 vers 105-114
+//         (Gampe 2010 ; Barbi et al., Science 2018) ⇒ toute génération finit par
+//         s'éteindre (∑ décès = naissances) ;
+//       — un facteur d'excès (OLDAGE_EXCESS, ×1,4 dès 95 ans) rehausse q pour
+//         reproduire la pyramide nationale des centenaires INSEE.
+//     Sans ces deux corrections, le modèle laissait « survivre » des gens de 125+
+//     ans (bug : 23 k faux vivants) et ~160 000 centenaires (vs ~31 000 réels).
+//   • Fichier des décès réels : arrêté à 110 ans et sous-comptant les très grands
+//     âges (natifs de métropole décédés à l'étranger, absents du fichier). Au-delà
+//     de 95 ans on impose donc le PLANCHER de la table modèle (OLDAGE_FLOOR_FROM)
+//     plutôt que le comptage réel, pour éviter les survivants « bloqués ».
 //   • Limite connue : les surmortalités de guerre (1914-18, 1939-45) ne sont pas
 //     isolées. Impact négligeable sur le compteur 2026 : ces générations ont
 //     aujourd'hui ~100 ans, leur survie est quasi nulle quoi qu'il arrive.
@@ -39,6 +54,8 @@
 //   s65 — 1900:40 · 1930:51 · 1950:67 · 1970:75,8 · 1990:82,2 · 2010:87,4 · 2023:89,6
 //   (survie à 65 = moyenne H/F des séries Banque mondiale SP.DYN.TO65.*, dérivées
 //    des tables de mortalité nationales.)
+//   Pyramide grand âge 2023 (INSEE) : ~31 000 personnes de 100 ans et +, ~2 000 de
+//   105 +, 39 de 110 +. Modèle 2026 : ~38 000 / ~2 300 / ~60 (croissance ~6 %/an).
 //
 // Sources :
 //   INSEE — naissances séries longues : https://www.insee.fr/fr/statistiques/8582147
@@ -47,6 +64,11 @@
 //   INED — mortalité infantile depuis 1901 : https://www.ined.fr/fr/tout-savoir-population/chiffres/france/mortalite-cause-deces/mortalite-infantile/
 //   Banque mondiale — survie à 65 ans (H/F) : indicateurs SP.DYN.TO65.MA.ZS / .FE.ZS
 //   Série naissances : Wikipédia « Démographie de la France » (d'après l'INSEE).
+//   INSEE — 30 000 centenaires en France (Insee Première n°1943, 2023) :
+//     https://www.insee.fr/fr/statistiques/7234483
+//   Plateau de mortalité aux grands âges : Gampe (2010), « Human mortality beyond
+//     age 110 » ; Barbi et al. (2018), « The plateau of human mortality », Science
+//     360:1459 — q annuel ≈ 0,5 entre 105 et 114 ans (base IDL).
 
 // Naissances vivantes en France métropolitaine, par année (valeurs réelles).
 const BIRTHS = {
@@ -100,14 +122,24 @@ function infantMortality(year) {
 // chaque époque reproduise l'espérance de vie ET la survie à 65 ans réelles —
 // voir l'en-tête du fichier. La valeur à 0 an reste là pour mémoire mais n'est
 // PAS utilisée : `mortalityRate` lit la mortalité infantile dans la série réelle.
+//
+// GRANDS ÂGES (≥ 110) — plateau de mortalité + plafond biologique.
+//   La recherche sur les super-centenaires (Gampe 2010 ; Barbi et al., Science
+//   2018, base IDL) montre qu'entre 105 et ~114 ans le quotient annuel plafonne
+//   autour de 0,5 (une chance sur deux de mourir dans l'année), puis qu'il
+//   n'existe aucun survivant au-delà d'une limite dure ~120-122 ans (record
+//   mondial 122 ans, doyen·ne français·e ~118). On prolonge donc chaque courbe
+//   de q(110) jusqu'à q≈0,99 à 122 ans : au-delà, l'extinction de la cohorte est
+//   certaine. Sans ce prolongement, le modèle laissait « survivre » indéfiniment
+//   la petite fraction atteignant 110 ans (bug : 23 k « vivants » de 125 ans).
 const MORTALITY_ERAS = {
-  1900: { 0: 0.16, 1: 0.0378, 5: 0.00504, 10: 0.00294, 15: 0.00336, 20: 0.00504, 25: 0.00588, 30: 0.00671, 35: 0.00755, 40: 0.00923, 45: 0.0109, 50: 0.0143, 55: 0.0185, 60: 0.0252, 65: 0.0341, 70: 0.0503, 75: 0.0731, 80: 0.106, 85: 0.15, 90: 0.211, 95: 0.284, 100: 0.365, 105: 0.446, 110: 0.528 },
-  1930: { 0: 0.084, 1: 0.0127, 5: 0.00212, 10: 0.00159, 15: 0.00212, 20: 0.00318, 25: 0.00371, 30: 0.00424, 35: 0.0053, 40: 0.00636, 45: 0.00847, 50: 0.0127, 55: 0.018, 60: 0.0265, 65: 0.0417, 70: 0.0643, 75: 0.0958, 80: 0.141, 85: 0.203, 90: 0.287, 95: 0.389, 100: 0.502, 105: 0.614, 110: 0.733 },
-  1950: { 0: 0.052, 1: 0.0042, 5: 0.000839, 10: 0.00063, 15: 0.000944, 20: 0.00147, 25: 0.00157, 30: 0.00178, 35: 0.00231, 40: 0.00315, 45: 0.00472, 50: 0.00734, 55: 0.0115, 60: 0.0189, 65: 0.0257, 70: 0.0413, 75: 0.0662, 80: 0.106, 85: 0.156, 90: 0.225, 95: 0.312, 100: 0.404, 105: 0.496, 110: 0.597 },
-  1970: { 0: 0.0182, 1: 0.000757, 5: 0.000379, 10: 0.000284, 15: 0.000568, 20: 0.000946, 25: 0.000946, 30: 0.00104, 35: 0.00142, 40: 0.00218, 45: 0.0036, 50: 0.00587, 55: 0.00928, 60: 0.0151, 65: 0.0203, 70: 0.0333, 75: 0.0545, 80: 0.0878, 85: 0.134, 90: 0.195, 95: 0.272, 100: 0.354, 105: 0.435, 110: 0.528 },
-  1990: { 0: 0.0073, 1: 0.000362, 5: 0.000181, 10: 0.000163, 15: 0.000362, 20: 0.000633, 25: 0.000724, 30: 0.000814, 35: 0.00109, 40: 0.00163, 45: 0.00271, 50: 0.00452, 55: 0.00724, 60: 0.0109, 65: 0.0144, 70: 0.0233, 75: 0.0361, 80: 0.0601, 85: 0.104, 90: 0.168, 95: 0.257, 100: 0.345, 105: 0.425, 110: 0.521 },
-  2010: { 0: 0.0036, 1: 0.000209, 5: 0.0000837, 10: 0.0000837, 15: 0.000251, 20: 0.000335, 25: 0.000419, 30: 0.000502, 35: 0.000754, 40: 0.00117, 45: 0.00201, 50: 0.00335, 55: 0.00519, 60: 0.00754, 65: 0.00879, 70: 0.0135, 75: 0.0216, 80: 0.0372, 85: 0.0676, 90: 0.122, 95: 0.203, 100: 0.284, 105: 0.355, 110: 0.439 },
-  2023: { 0: 0.0041, 1: 0.000153, 5: 0.0000767, 10: 0.0000767, 15: 0.000192, 20: 0.000269, 25: 0.000345, 30: 0.000422, 35: 0.000614, 40: 0.000998, 45: 0.00169, 50: 0.00284, 55: 0.00437, 60: 0.00576, 65: 0.00831, 70: 0.0121, 75: 0.0189, 80: 0.034, 85: 0.0642, 90: 0.121, 95: 0.212, 100: 0.302, 105: 0.393, 110: 0.491 },
+  1900: { 0: 0.16, 1: 0.0378, 5: 0.00504, 10: 0.00294, 15: 0.00336, 20: 0.00504, 25: 0.00588, 30: 0.00671, 35: 0.00755, 40: 0.00923, 45: 0.0109, 50: 0.0143, 55: 0.0185, 60: 0.0252, 65: 0.0341, 70: 0.0503, 75: 0.0731, 80: 0.106, 85: 0.15, 90: 0.211, 95: 0.284, 100: 0.365, 105: 0.446, 110: 0.528, 113: 0.667, 116: 0.805, 119: 0.907, 122: 0.99 },
+  1930: { 0: 0.084, 1: 0.0127, 5: 0.00212, 10: 0.00159, 15: 0.00212, 20: 0.00318, 25: 0.00371, 30: 0.00424, 35: 0.0053, 40: 0.00636, 45: 0.00847, 50: 0.0127, 55: 0.018, 60: 0.0265, 65: 0.0417, 70: 0.0643, 75: 0.0958, 80: 0.141, 85: 0.203, 90: 0.287, 95: 0.389, 100: 0.502, 105: 0.614, 110: 0.733, 113: 0.810, 116: 0.887, 119: 0.944, 122: 0.99 },
+  1950: { 0: 0.052, 1: 0.0042, 5: 0.000839, 10: 0.00063, 15: 0.000944, 20: 0.00147, 25: 0.00157, 30: 0.00178, 35: 0.00231, 40: 0.00315, 45: 0.00472, 50: 0.00734, 55: 0.0115, 60: 0.0189, 65: 0.0257, 70: 0.0413, 75: 0.0662, 80: 0.106, 85: 0.156, 90: 0.225, 95: 0.312, 100: 0.404, 105: 0.496, 110: 0.597, 113: 0.715, 116: 0.833, 119: 0.919, 122: 0.99 },
+  1970: { 0: 0.0182, 1: 0.000757, 5: 0.000379, 10: 0.000284, 15: 0.000568, 20: 0.000946, 25: 0.000946, 30: 0.00104, 35: 0.00142, 40: 0.00218, 45: 0.0036, 50: 0.00587, 55: 0.00928, 60: 0.0151, 65: 0.0203, 70: 0.0333, 75: 0.0545, 80: 0.0878, 85: 0.134, 90: 0.195, 95: 0.272, 100: 0.354, 105: 0.435, 110: 0.528, 113: 0.667, 116: 0.805, 119: 0.907, 122: 0.99 },
+  1990: { 0: 0.0073, 1: 0.000362, 5: 0.000181, 10: 0.000163, 15: 0.000362, 20: 0.000633, 25: 0.000724, 30: 0.000814, 35: 0.00109, 40: 0.00163, 45: 0.00271, 50: 0.00452, 55: 0.00724, 60: 0.0109, 65: 0.0144, 70: 0.0233, 75: 0.0361, 80: 0.0601, 85: 0.104, 90: 0.168, 95: 0.257, 100: 0.345, 105: 0.425, 110: 0.521, 113: 0.662, 116: 0.802, 119: 0.905, 122: 0.99 },
+  2010: { 0: 0.0036, 1: 0.000209, 5: 0.0000837, 10: 0.0000837, 15: 0.000251, 20: 0.000335, 25: 0.000419, 30: 0.000502, 35: 0.000754, 40: 0.00117, 45: 0.00201, 50: 0.00335, 55: 0.00519, 60: 0.00754, 65: 0.00879, 70: 0.0135, 75: 0.0216, 80: 0.0372, 85: 0.0676, 90: 0.122, 95: 0.203, 100: 0.284, 105: 0.355, 110: 0.439, 113: 0.604, 116: 0.770, 119: 0.891, 122: 0.99 },
+  2023: { 0: 0.0041, 1: 0.000153, 5: 0.0000767, 10: 0.0000767, 15: 0.000192, 20: 0.000269, 25: 0.000345, 30: 0.000422, 35: 0.000614, 40: 0.000998, 45: 0.00169, 50: 0.00284, 55: 0.00437, 60: 0.00576, 65: 0.00831, 70: 0.0121, 75: 0.0189, 80: 0.034, 85: 0.0642, 90: 0.121, 95: 0.212, 100: 0.302, 105: 0.393, 110: 0.491, 113: 0.641, 116: 0.790, 119: 0.900, 122: 0.99 },
 };
 
 // Interpolation linéaire sur un objet {clé numérique : valeur}.
@@ -145,10 +177,24 @@ function mortalityRate(age, year) {
   }
   const qLo = interp(MORTALITY_ERAS[loEra], age);
   const qHi = interp(MORTALITY_ERAS[hiEra], age);
-  if (hiEra === loEra) return qLo;
-  const t = (yr - loEra) / (hiEra - loEra);
-  return qLo + t * (qHi - qLo);
+  const q = hiEra === loEra ? qLo : qLo + ((yr - loEra) / (hiEra - loEra)) * (qHi - qLo);
+  // Correction grand âge : la table extrapolée était trop douce au-delà de 95 ans
+  // et le fichier des décès sous-compte les très grands âges (natifs de métropole
+  // décédés à l'étranger, absents du fichier → « faux survivants »). Le facteur
+  // OLDAGE_EXCESS rehausse q à partir de 95 ans pour reproduire la pyramide
+  // nationale des centenaires publiée par l'INSEE (voir OLDAGE_EXCESS).
+  const excess = age >= OLDAGE_EXCESS_FROM ? OLDAGE_EXCESS : 1;
+  return Math.min(0.999, q * excess);
 }
+
+// Correction de mortalité aux grands âges, calibrée sur la pyramide nationale des
+// centenaires (INSEE 2023 : ~31 000 personnes de 100 ans et +, ~2 000 de 105 +,
+// 39 de 110 +). Sans elle, le modèle laissait « survivre » ~160 000 centenaires et
+// ~1 400 personnes de 110 +. Avec (×1,4 à partir de 95 ans) : ~38 000 de 100 + —
+// cohérent avec 2026, la population centenaire croissant de ~6 %/an — ~2 300 de
+// 105 + et ~60 de 110 +. Voir aussi le plateau super-centenaire (§ MORTALITY_ERAS).
+const OLDAGE_EXCESS_FROM = 95;
+const OLDAGE_EXCESS = 1.4;
 
 // ───────────────────────────────────────────────────────────────────────────
 // AFFINAGE PAR SEXE
@@ -224,7 +270,7 @@ function cohortSurvival(birthYear, currentYear) {
 // Renvoie un tableau : décès[a] = nombre de personnes de la génération qui
 // meurent à l'âge a. Les âges au-delà de l'âge actuel sont une projection
 // (mortalité figée à l'époque la plus récente).
-const MAX_LIFE = 111;
+const MAX_LIFE = 123; // âges 0..122 : couvre toute la vie jusqu'au plafond biologique (~122 ans).
 function cohortDeathsByAge(birthYear, sex) {
   const births = birthsForYear(birthYear);
   const out = [];
@@ -291,21 +337,47 @@ function modelDeathsBySexAge(birthYear, sex) {
   return out;
 }
 
+// Au-delà de cet âge, le fichier des décès réels s'amincit (il est arrêté à
+// 110 ans et sous-compte fortement les très grands âges) : on impose alors un
+// PLANCHER de mortalité issu de la table modèle, pour que la cohorte s'éteigne
+// le long d'une vraie table de survie au lieu de laisser des survivants
+// « bloqués ». En dessous, le comptage réel INSEE est honoré tel quel.
+const OLDAGE_FLOOR_FROM = 95;
+
 // Série de décès par âge d'un sexe, selon la source :
-//   "model"        → modèle pur ;
-//   "metro"/"all"  → réel là où dispo (1970..LAST), modèle avant et après.
+//   "model"        → modèle pur (taux appliqués à la cohorte fictive) ;
+//   "metro"/"all"  → décès réels INSEE là où ils sont fiables (1970..LAST,
+//                    jusqu'à ~100 ans), puis fermeture par le modèle.
+//
+//   Point clé : hors fenêtre réelle (avant 1970, après LAST, et aux âges où le
+//   fichier réel est incomplet), on n'empile PAS des effectifs d'une cohorte
+//   modèle parallèle — on applique le TAUX de mortalité au nombre de survivants
+//   RÉELLEMENT restants. La série devient ainsi une vraie table de cohorte :
+//   ∑ décès = naissances, donc toute génération finit par s'éteindre (plus de
+//   « survivants » de 125 ans).
 function deathSeriesSex(birthYear, sex, source) {
-  const model = modelDeathsBySexAge(birthYear, sex);
-  if (source === "model") return model;
-  const real = realDeathArray(source, birthYear, sex);
+  const births = birthsForYear(birthYear);
+  const share = sex === "M" ? BIRTH_SHARE_MALE : 1 - BIRTH_SHARE_MALE;
+  const real = source === "model" ? null : realDeathArray(source, birthYear, sex);
   const out = [];
+  let alive = births * share;
   for (let a = 0; a < MAX_LIFE; a++) {
     const year = birthYear + a;
-    if (real && year >= 1970 && year <= REAL_DEATHS_LAST_YEAR) {
-      out.push(real[a] || 0);
+    const modelD = alive * mortalityRateSex(sex, a, year);
+    const hasReal =
+      real && year >= 1970 && year <= REAL_DEATHS_LAST_YEAR && a < real.length;
+    let d;
+    if (hasReal) {
+      d = real[a] || 0;
+      // Aux très grands âges, le réel sous-compte : on ne descend jamais sous le
+      // plancher de la table modèle appliqué aux survivants encore en vie.
+      if (a >= OLDAGE_FLOOR_FROM && modelD > d) d = modelD;
     } else {
-      out.push(model[a]);
+      d = modelD;
     }
+    if (d > alive) d = alive;
+    out.push(d);
+    alive -= d;
   }
   return out;
 }
