@@ -21,22 +21,35 @@
 
 ## 🎫 Tes tickets — backlog commun flaggé `#deathcount`
 
-Ce projet **n'a pas son backlog à lui** : ses tickets vivent dans le **backlog commun du serveur** (`/root/.openclaw/server-context/backlog.md`, source de vérité unique, rendu live sur `asimov.bourdat.fr`). Loïc — ou Asimov, son PO — y dépose des tâches **flaggées `#deathcount`** (ex. « sur deathcount, ajoute un partage du résultat » → `[P2][todo] #deathcount Partage du résultat — … ~1h`).
+Ce projet **n'a pas son backlog à lui** : ses tickets vivent dans le **backlog serveur, fichier par projet** — **`/root/.openclaw/server-context/backlog.d/deathcount.md`** (source de vérité unique, rendu live sur `asimov.bourdat.fr`, pages **Backlog** + **Roadmap**). Loïc — ou Asimov, son PO — y dépose des tâches **flaggées `#deathcount`** (ex. « sur deathcount, ajoute un partage du résultat » → `[P2][todo] #deathcount Partage du résultat — … ~1h`).
 
-**Au début d'une session de travail sur deathcount**, récupère TES tickets et propose-les à Loïc :
+> ⚠️ **Ne lis/écris JAMAIS l'ancien monolithe `backlog.md`** : depuis 2026-07-03 chaque projet a son fichier `backlog.d/<flag>.md` (le hub rend ces fichiers-là). Grep le monolithe = tu ne verras rien.
+
+**Au début d'une session** (le hook `SessionStart` `tools/deathcount-backlog-load.sh` le fait automatiquement), récupère TES tickets ouverts et propose-les à Loïc :
 
 ```bash
 ssh root@atlas.bourdat.fr \
-  "grep -nE '^\[(P[0-4]|quickwin|wishlist)\]\[(todo|progress)\] #deathcount ' /root/.openclaw/server-context/backlog.md"
+  "grep -nE '^\[(P[0-4]|quickwin|wishlist)\]\[(todo|progress)\]' /root/.openclaw/server-context/backlog.d/deathcount.md"
 ```
 
-Pour chaque ticket traité : **(option)** flip `[todo]` → `[progress]` côté serveur ; **traite-le** ici (branche-par-session) ; **marque-le `done` sur le serveur** (la source de vérité) une fois fini **et prouvé** :
+Pour chaque ticket traité :
+1. **(option)** flip `[todo]` → `[progress]` : édition directe de `backlog.d/deathcount.md`, **re-grep la ligne juste avant d'écrire** (état live, éviter le lost-update).
+2. **Traite-le** ici (code + doc + branche-par-session).
+3. **Marque-le `done`** dans `backlog.d/deathcount.md`, une fois fini **et prouvé** (matching sur un bout unique du titre) :
+   ```bash
+   ssh root@atlas.bourdat.fr \
+     "sed -i 's/^\[\(P[0-4]\|quickwin\|wishlist\)\]\[\(todo\|progress\)\] #deathcount Partage du résultat/[P2][done] #deathcount Partage du résultat/' \
+      /root/.openclaw/server-context/backlog.d/deathcount.md"
+   ```
+4. **Signifie-le à Loïc** : « ✅ ticket *Partage du résultat* traité (commit `…`), passé en `done` ». Il le verra aussi sur le hub.
+
+**AJOUTER un ticket** → jamais d'édition brute (le flock protège contre le lost-update) : utilise **`oc-backlog add`**, qui route automatiquement vers `backlog.d/deathcount.md` grâce au 1er `#flag` :
 ```bash
-ssh root@atlas.bourdat.fr \
-  "sed -i 's/^\[(P[0-4]|quickwin|wishlist)\]\[\(todo\|progress\)\] #deathcount Partage du résultat/[P2][done] #deathcount Partage du résultat/' \
-   /root/.openclaw/server-context/backlog.md"
+ssh root@atlas.bourdat.fr "oc-backlog add '[P2][todo] #deathcount Titre court — pourquoi @openclaw:doc.md ~Nh'"
 ```
-Puis **signifie-le à Loïc** : « ✅ ticket *Partage du résultat* traité (commit `…`), passé en `done` ». Il le verra aussi sur le hub. Ne touche **que** tes lignes `#deathcount` ; ne ferme jamais un ticket non prouvé.
+Token optionnel `@id:DC-N` (ID humain stable, référençable sur le hub) — attribué par le PO.
+
+Ne touche **que** tes lignes `#deathcount` ; ne ferme jamais un ticket non prouvé.
 
 ## Références obligatoires (hors de ce repo)
 
